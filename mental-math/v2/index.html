@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-design="paper" data-color="system">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <!-- <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; connect-src 'none'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' data:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'"
+    > -->
+    <meta name="description" content="A private, offline mental arithmetic speed trainer.">
+    <meta name="codex-preview" content="development">
+    <meta name="theme-color" content="#f4efe3">
+    <meta name="referrer" content="no-referrer">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Math Sprint">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <title>Mental Math Sprint</title>
+  </head>
+  <body>
+    <div class="app-shell" id="app">
+      <header class="app-header">
+        <button class="brand" id="homeButton" type="button" aria-label="Return to setup">
+          <span class="brand-symbol" aria-hidden="true">±</span>
+          <span>
+            <strong>Mental Math</strong>
+            <small>Sprint trainer</small>
+          </span>
+        </button>
+        <nav class="header-actions" aria-label="Application actions">
+          <button class="text-button" id="installButton" type="button">
+            <span aria-hidden="true">↓</span> Install
+          </button>
+          <button class="icon-button" id="helpButton" type="button" aria-label="Help">?</button>
+        </nav>
+      </header>
+
+      <main id="main" tabindex="-1"></main>
+      <div id="overlay"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+      <div class="sr-only" id="liveRegion" aria-live="assertive"></div>
+    </div>
+    <noscript>This app requires JavaScript. No account or internet connection is required after installation.</noscript>
+    <script src="app.js" defer></script>
+  </body>
+</html>
