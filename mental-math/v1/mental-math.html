@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e293b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mental Math PWA</title>
+
+  <!-- Subresource Integrity (SRI) Integration -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="data:application/manifest+json;utf8,%7B%22name%22%3A%22Mental%20Math%20PWA%22%2C%22short_name%22%3A%22MentalMath%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%231e293b%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%3E%3Crect%20width%3D'512'%20height%3D'512'%20rx%3D'100'%20fill%3D'%232563eb'%2F%3E%3Ctext%20x%3D'50%25'%20y%3D'55%25'%20dominant-baseline%3D'middle'%20text-anchor%3D'middle'%20fill%3D'white'%20font-size%3D'280'%20font-family%3D'sans-serif'%20font-weight%3D'bold'%3E%2B%C3%B7%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
+  <style>
+    /* CSS Variables for Dynamic Theme Engine */
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-surface: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --border: #cbd5e1;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-surface: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #fbbf24;
+      --border: #334155;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      [data-theme="system"] {
+        --bg-primary: #0f172a;
+        --bg-surface: #1e293b;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent: #3b82f6;
+        --accent-hover: #60a5fa;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --warning: #fbbf24;
+        --border: #334155;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--bg-surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--card-shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    select, button, input[type="number"], input[type="text"] {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+    }
+    button.danger {
+      background: var(--danger);
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+    }
+    button.warning {
+      background: var(--warning);
+      color: #1e293b;
+      border: none;
+      font-weight: 600;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .config-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+    }
+
+    .checkbox-tile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-primary);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .checkbox-tile input {
+      accent-color: var(--accent);
+    }
+
+    .duration-inputs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .duration-inputs input {
+      width: 70px;
+      text-align: center;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-primary);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .equation-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+      padding: 16px;
+      background: var(--bg-primary);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+
+    .equation-area.horizontal {
+      flex-direction: row;
+      gap: 12px;
+    }
+
+    .equation-area.vertical {
+      flex-direction: column;
+      align-items: flex-end;
+      width: fit-content;
+      margin: 0 auto;
+      padding: 20px 40px;
+    }
+
+    .equation-area.vertical .line {
+      width: 100%;
+      height: 3px;
+      background-color: var(--text-primary);
+      margin: 6px 0;
+    }
+
+    .fraction-display {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      font-size: 1.8rem;
+      padding: 0 4px;
+    }
+
+    .fraction-display .num {
+      border-bottom: 2px solid var(--text-primary);
+      padding: 0 4px;
+    }
+
+    .fraction-display .den {
+      padding: 0 4px;
+    }
+
+    .input-display {
+      width: 100%;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid var(--accent);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .keypad button {
+      padding: 16px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: 10px;
+      background: var(--bg-primary);
+    }
+
+    .keypad button.action { background: var(--accent); color: #ffffff; }
+    .keypad button.clear-btn { background: var(--danger); color: #ffffff; }
+
+    .game-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .review-list {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .review-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      border-left: 4px solid var(--danger);
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      body { padding: 4px; }
+      .container { max-width: 95vw; padding: 10px; gap: 8px; }
+      .equation-area { min-height: 80px; font-size: 1.6rem; padding: 8px; }
+      .keypad button { padding: 8px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Mental Math</h1>
+      <div class="controls-row">
+        <select id="themeSelect" onchange="setTheme(this.value)">
+          <option value="system">System Mode</option>
+          <option value="day">Daytime Mode</option>
+          <option value="night">Nighttime Mode</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- CONFIGURATION PANEL -->
+    <div id="configPanel" class="config-section">
+      <div class="form-group">
+        <label>Difficulty Level</label>
+        <select id="difficultySelect">
+          <option value="easy">Easy (Single digits / Basic)</option>
+          <option value="medium" selected>Medium (Two digits / Standard)</option>
+          <option value="hard">Hard (Three digits / Advanced)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Equation Orientation</label>
+        <select id="orientationSelect">
+          <option value="horizontal">Horizontal</option>
+          <option value="vertical">Vertical Stacked</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Operations</label>
+        <div class="checkbox-group">
+          <label class="checkbox-tile"><input type="checkbox" name="op" value="add" checked> Addition</label>
+          <label class="checkbox-tile"><input type="checkbox" name="op" value="sub" checked> Subtraction</label>
+          <label class="checkbox-tile"><input type="checkbox" name="op" value="mul"> Multiplication</label>
+          <label class="checkbox-tile"><input type="checkbox" name="op" value="div"> Division</label>
+          <label class="checkbox-tile"><input type="checkbox" name="op" value="frac"> Fractions</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Session Duration</label>
+        <div class="duration-inputs">
+          <input type="number" id="durMin" min="0" max="60" value="1"> <span>Min</span>
+          <input type="number" id="durSec" min="0" max="59" value="0"> <span>Sec</span>
+        </div>
+      </div>
+
+      <button class="primary" style="padding: 14px; font-size: 1.1rem;" onclick="startGame()">Start Session</button>
+
+      <div class="form-group" style="margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label>Hall of Fame (Top 3)</label>
+          <button class="danger" style="font-size: 0.75rem; padding: 4px 8px;" onclick="clearData()">Clear Data</button>
+        </div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Initials</th>
+              <th>Score</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Dynamic Insertion -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIVE GAMEPLAY PANEL -->
+    <div id="gamePanel" class="config-section hidden">
+      <div class="game-header">
+        <div>Time: <span id="timerDisplay">0:00</span></div>
+        <div>Score: <span id="scoreDisplay">0</span></div>
+      </div>
+
+      <div id="equationDisplay" class="equation-area horizontal">
+        <!-- Procedural Equation HTML inserted here -->
+      </div>
+      <div id="pausedOverlay" class="equation-area hidden" style="font-size: 1.5rem; color: var(--warning);">
+        SESSION PAUSED
+      </div>
+
+      <input type="text" id="answerInput" class="input-display" placeholder="?" readonly>
+
+      <div class="keypad">
+        <button onclick="pressKey('1')">1</button>
+        <button onclick="pressKey('2')">2</button>
+        <button onclick="pressKey('3')">3</button>
+        <button onclick="pressKey('4')">4</button>
+        <button onclick="pressKey('5')">5</button>
+        <button onclick="pressKey('6')">6</button>
+        <button onclick="pressKey('7')">7</button>
+        <button onclick="pressKey('8')">8</button>
+        <button onclick="pressKey('9')">9</button>
+        <button onclick="pressKey('/')">/</button>
+        <button onclick="pressKey('0')">0</button>
+        <button onclick="pressKey('-')">-</button>
+        <button class="clear-btn" onclick="clearInput()">Clear</button>
+        <button class="action" style="grid-column: span 2;" onclick="submitAnswer()">Submit</button>
+      </div>
+
+      <div class="game-actions">
+        <button id="pauseBtn" class="warning" onclick="togglePause()">Pause</button>
+        <button class="danger" onclick="quitSession()">Quit Session</button>
+      </div>
+    </div>
+
+    <!-- POST-SESSION REVIEW PANEL -->
+    <div id="reviewPanel" class="config-section hidden">
+      <h2>Session Complete</h2>
+      <p>Final Score: <strong id="finalScoreDisplay">0</strong></p>
+      <p>Equations Processed: <strong id="totalAnsweredDisplay">0</strong></p>
+      
+      <div id="highScoreInputBlock" class="form-group hidden">
+        <label>New High Score! Enter Initials:</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="playerInitials" maxlength="3" style="text-transform: uppercase; padding: 8px; font-size: 1rem;" placeholder="AAA">
+          <button class="primary" onclick="saveHighScore()">Save</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Incorrect Answer Review Log</label>
+        <div id="reviewList" class="review-list">
+          <!-- Log entries inserted dynamically -->
+        </div>
+      </div>
+
+      <button class="primary" onclick="returnToConfig()">Main Menu</button>
+    </div>
+  </div>
+
+  <script>
+    /* GAME STATE MANAGEMENT */
+    let currentState = {
+      difficulty: 'medium',
+      orientation: 'horizontal',
+      operations: [],
+      duration: 60,
+      timeLeft: 60,
+      score: 0,
+      timerInterval: null,
+      currentEquation: null,
+      errorLog: [],
+      totalAnswered: 0,
+      isPaused: false
+    };
+
+    /* THEME ENGINE */
+    function setTheme(mode) {
+      const html = document.documentElement;
+      if (mode === 'day') {
+        html.setAttribute('data-theme', 'light');
+      } else if (mode === 'night') {
+        html.setAttribute('data-theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'system');
+      }
+      localStorage.setItem('mm_theme', mode);
+    }
+    const savedTheme = localStorage.getItem('mm_theme') || 'system';
+    document.getElementById('themeSelect').value = savedTheme;
+    setTheme(savedTheme);
+
+    /* UI CONTROLLERS */
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function pressKey(val) {
+      if (currentState.isPaused) return;
+      const input = document.getElementById('answerInput');
+      input.value += val;
+    }
+
+    function clearInput() {
+      if (currentState.isPaused) return;
+      document.getElementById('answerInput').value = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('gamePanel').classList.contains('hidden') || currentState.isPaused) return;
+      if ((e.key >= '0' && e.key <= '9') || e.key === '/' || e.key === '-') {
+        pressKey(e.key);
+      } else if (e.key === 'Backspace') {
+        const input = document.getElementById('answerInput');
+        input.value = input.value.slice(0, -1);
+      } else if (e.key === 'Enter') {
+        submitAnswer();
+      }
+    });
+
+    /* PROCEDURAL MATH ENGINE */
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function gcd(a, b) {
+      return b === 0 ? a : gcd(b, a % b);
+    }
+
+    function generateEquation() {
+      const ops = currentState.operations;
+      const selectedOp = ops[Math.floor(Math.random() * ops.length)];
+      const diff = currentState.difficulty;
+      let rangeMin = 1, rangeMax = 10;
+      if (diff === 'medium') { rangeMin = 5; rangeMax = 30; }
+      if (diff === 'hard') { rangeMin = 12; rangeMax = 100; }
+
+      let eq = { displayHtml: '', targetAnswer: '', rawText: '' };
+
+      if (selectedOp === 'add') {
+        const a = getRandomInt(rangeMin, rangeMax);
+        const b = getRandomInt(rangeMin, rangeMax);
+        eq.rawText = `${a} + ${b}`;
+        eq.targetAnswer = (a + b).toString();
+        eq.displayHtml = formatEquationDisplay(a, '+', b);
+      } else if (selectedOp === 'sub') {
+        const a = getRandomInt(rangeMin, rangeMax);
+        const b = getRandomInt(1, a);
+        eq.rawText = `${a} - ${b}`;
+        eq.targetAnswer = (a - b).toString();
+        eq.displayHtml = formatEquationDisplay(a, '-', b);
+      } else if (selectedOp === 'mul') {
+        const multMax = diff === 'easy' ? 9 : (diff === 'medium' ? 12 : 25);
+        const a = getRandomInt(2, multMax);
+        const b = getRandomInt(2, multMax);
+        eq.rawText = `${a} \u00D7 ${b}`;
+        eq.targetAnswer = (a * b).toString();
+        eq.displayHtml = formatEquationDisplay(a, '\u00D7', b);
+      } else if (selectedOp === 'div') {
+        const multMax = diff === 'easy' ? 9 : (diff === 'medium' ? 12 : 20);
+        const b = getRandomInt(2, multMax);
+        const ans = getRandomInt(1, multMax);
+        const a = b * ans;
+        eq.rawText = `${a} \u00F7 ${b}`;
+        eq.targetAnswer = ans.toString();
+        eq.displayHtml = formatEquationDisplay(a, '\u00F7', b);
+      } else if (selectedOp === 'frac') {
+        const den1 = getRandomInt(2, diff === 'easy' ? 4 : 8);
+        const num1 = getRandomInt(1, den1 - 1);
+        const den2 = getRandomInt(2, diff === 'easy' ? 4 : 8);
+        const num2 = getRandomInt(1, den2 - 1);
+        const resNum = num1 * den2 + num2 * den1;
+        const resDen = den1 * den2;
+        const common = gcd(resNum, resDen);
+        const finalNum = resNum / common;
+        const finalDen = resDen / common;
+
+        eq.rawText = `${num1}/${den1} + ${num2}/${den2}`;
+        eq.targetAnswer = finalDen === 1 ? `${finalNum}` : `${finalNum}/${finalDen}`;
+
+        const frac1Html = `<span class="fraction-display"><span class="num">${num1}</span><span class="den">${den1}</span></span>`;
+        const frac2Html = `<span class="fraction-display"><span class="num">${num2}</span><span class="den">${den2}</span></span>`;
+        eq.displayHtml = formatEquationDisplay(frac1Html, '+', frac2Html, true);
+      }
+      return eq;
+    }
+
+    function formatEquationDisplay(op1, opStr, op2, isComplex = false) {
+      if (currentState.orientation === 'vertical' && !isComplex) {
+        return `<div>${op1}</div><div>${opStr} ${op2}</div><div class="line"></div>`;
+      } else {
+        return `<span>${op1} ${opStr} ${op2} =</span>`;
+      }
+    }
+
+    /* GAME PLAY FLOW */
+    function startGame() {
+      const checkedOps = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(cb => cb.value);
+      if (checkedOps.length === 0) {
+        alert('Select at least one mathematical operation.');
+        return;
+      }
+
+      const minutes = parseInt(document.getElementById('durMin').value, 10) || 0;
+      const seconds = parseInt(document.getElementById('durSec').value, 10) || 0;
+      const totalSeconds = (minutes * 60) + seconds;
+
+      if (totalSeconds <= 0) {
+        alert('Please enter a duration greater than 0.');
+        return;
+      }
+
+      currentState.operations = checkedOps;
+      currentState.difficulty = document.getElementById('difficultySelect').value;
+      currentState.orientation = document.getElementById('orientationSelect').value;
+      currentState.duration = totalSeconds;
+      currentState.timeLeft = totalSeconds;
+      currentState.score = 0;
+      currentState.totalAnswered = 0;
+      currentState.errorLog = [];
+      currentState.isPaused = false;
+
+      document.getElementById('configPanel').classList.add('hidden');
+      document.getElementById('reviewPanel').classList.add('hidden');
+      document.getElementById('gamePanel').classList.remove('hidden');
+
+      // Reset Pause UI state
+      document.getElementById('pauseBtn').textContent = 'Pause';
+      document.getElementById('pauseBtn').className = 'warning';
+      document.getElementById('equationDisplay').classList.remove('hidden');
+      document.getElementById('pausedOverlay').classList.add('hidden');
+      document.getElementById('answerInput').style.opacity = '1';
+
+      const eqContainer = document.getElementById('equationDisplay');
+      eqContainer.className = `equation-area ${currentState.orientation}`;
+
+      document.getElementById('timerDisplay').textContent = formatTime(currentState.timeLeft);
+      document.getElementById('scoreDisplay').textContent = currentState.score;
+
+      nextQuestion();
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(currentState.timerInterval);
+      currentState.timerInterval = setInterval(() => {
+        currentState.timeLeft--;
+        document.getElementById('timerDisplay').textContent = formatTime(currentState.timeLeft);
+        if (currentState.timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function togglePause() {
+      const btn = document.getElementById('pauseBtn');
+      if (currentState.isPaused) {
+        currentState.isPaused = false;
+        btn.textContent = 'Pause';
+        btn.className = 'warning';
+        document.getElementById('equationDisplay').classList.remove('hidden');
+        document.getElementById('pausedOverlay').classList.add('hidden');
+        document.getElementById('answerInput').style.opacity = '1';
+        startTimer();
+      } else {
+        currentState.isPaused = true;
+        btn.textContent = 'Resume';
+        btn.className = 'primary';
+        document.getElementById('equationDisplay').classList.add('hidden');
+        document.getElementById('pausedOverlay').classList.remove('hidden');
+        document.getElementById('answerInput').style.opacity = '0';
+        clearInterval(currentState.timerInterval);
+      }
+    }
+
+    function quitSession() {
+      if (confirm("Are you sure you want to quit the current session?")) {
+        endGame();
+      }
+    }
+
+    function clearData() {
+      if (confirm("Are you sure you want to permanently delete all high scores?")) {
+        localStorage.removeItem('mm_leaderboard');
+        renderLeaderboard();
+      }
+    }
+
+    function nextQuestion() {
+      clearInput();
+      currentState.currentEquation = generateEquation();
+      document.getElementById('equationDisplay').innerHTML = currentState.currentEquation.displayHtml;
+    }
+
+    function submitAnswer() {
+      if (currentState.isPaused) return;
+      const userVal = document.getElementById('answerInput').value.trim();
+      if (!userVal) return;
+
+      currentState.totalAnswered++;
+      const targetVal = currentState.currentEquation.targetAnswer;
+
+      if (userVal === targetVal) {
+        let points = currentState.difficulty === 'easy' ? 10 : (currentState.difficulty === 'medium' ? 20 : 35);
+        currentState.score += points;
+        document.getElementById('scoreDisplay').textContent = currentState.score;
+      } else {
+        currentState.errorLog.push({
+          equation: currentState.currentEquation.rawText,
+          userAnswer: userVal,
+          correctAnswer: targetVal
+        });
+      }
+      nextQuestion();
+    }
+
+    function endGame() {
+      clearInterval(currentState.timerInterval);
+      document.getElementById('gamePanel').classList.add('hidden');
+      document.getElementById('reviewPanel').classList.remove('hidden');
+      document.getElementById('finalScoreDisplay').textContent = currentState.score;
+      document.getElementById('totalAnsweredDisplay').textContent = currentState.totalAnswered;
+
+      const reviewList = document.getElementById('reviewList');
+      reviewList.innerHTML = '';
+      if (currentState.errorLog.length === 0 && currentState.totalAnswered > 0) {
+        reviewList.innerHTML = '<div style="padding:10px; text-align:center;">100% Accuracy achieved!</div>';
+      } else if (currentState.totalAnswered === 0) {
+        reviewList.innerHTML = '<div style="padding:10px; text-align:center;">No equations answered.</div>';
+      } else {
+        currentState.errorLog.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'review-item';
+          div.innerHTML = `
+            <span><strong>${item.equation}</strong></span>
+            <span>Your Answer: <span style="color:var(--danger)">${item.userAnswer}</span> | Correct: <span style="color:var(--success)">${item.correctAnswer}</span></span>
+          `;
+          reviewList.appendChild(div);
+        });
+      }
+
+      const topScores = getTopScores();
+      if (currentState.score > 0 && (topScores.length < 3 || currentState.score > topScores[topScores.length - 1].score)) {
+        document.getElementById('highScoreInputBlock').classList.remove('hidden');
+      } else {
+        document.getElementById('highScoreInputBlock').classList.add('hidden');
+      }
+    }
+
+    function returnToConfig() {
+      document.getElementById('reviewPanel').classList.add('hidden');
+      document.getElementById('configPanel').classList.remove('hidden');
+      renderLeaderboard();
+    }
+
+    /* LOCAL STORAGE & LEADERBOARD MANAGEMENT */
+    function getTopScores() {
+      const data = localStorage.getItem('mm_leaderboard');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveHighScore() {
+      const initials = document.getElementById('playerInitials').value.toUpperCase().trim() || 'AAA';
+      const topScores = getTopScores();
+      const now = new Date();
+      const timeStr = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      topScores.push({ initials: initials, score: currentState.score, date: timeStr });
+      topScores.sort((a, b) => b.score - a.score);
+      
+      localStorage.setItem('mm_leaderboard', JSON.stringify(topScores.slice(0, 3)));
+      document.getElementById('highScoreInputBlock').classList.add('hidden');
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const topScores = getTopScores();
+      const body = document.getElementById('leaderboardBody');
+      body.innerHTML = '';
+      if (topScores.length === 0) {
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;">No high scores stored yet.</td></tr>';
+        return;
+      }
+      topScores.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>#${index + 1}</td>
+          <td><strong>${entry.initials}</strong></td>
+          <td>${entry.score}</td>
+          <td>${entry.date}</td>
+        `;
+        body.appendChild(row);
+      });
+    }
+    renderLeaderboard();
+
+    /* OFFLINE SERVICE WORKER REGISTRATION */
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE_NAME = 'mental-math-v2';
+        const EXTERNAL_RESOURCES = [
+          'https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css'
+        ];
+        self.addEventListener('install', (e) => {
+          e.waitUntil(
+            caches.open(CACHE_NAME).then((cache) => {
+              return cache.addAll(['./', ...EXTERNAL_RESOURCES]);
+            })
+          );
+        });
+        self.addEventListener('fetch', (e) => {
+          e.respondWith(
+            caches.match(e.request).then((res) => res || fetch(e.request))
+          );
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(blobUrl).catch(() => {});
+    }
+  </script>
+</body>
+</html>
